@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>퀴즈 관리자 시스템</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 40px; background: #f8fafc; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #eee; }
+        .btn { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; color: white; font-weight: bold; }
+        .download-btn { background: #059669; }
+        .delete-btn { background: #dc2626; margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <h2>📊 퀴즈 응시 현황 관리</h2>
+    <button class="btn download-btn" onclick="downloadExcel()">엑셀 파일로 다운로드</button>
+    <button class="btn delete-btn" onclick="clearData()">전체 데이터 초기화</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>응시 일시</th>
+                <th>성명</th>
+                <th>사번</th>
+                <th>점수</th>
+                <th>결과</th>
+            </tr>
+        </thead>
+        <tbody id="data-table">
+            </tbody>
+    </table>
+
+    <script>
+        function loadData() {
+            const history = JSON.parse(localStorage.getItem('quizHistory')) || [];
+            const tableBody = document.getElementById('data-table');
+            tableBody.innerHTML = history.reverse().map(item => `
+                <tr>
+                    <td>${item.일시}</td>
+                    <td>${item.이름}</td>
+                    <td>${item.사번}</td>
+                    <td>${item.점수}</td>
+                    <td>${item.결과}</td>
+                </tr>
+            `).join('');
+        }
+
+        function downloadExcel() {
+            const history = JSON.parse(localStorage.getItem('quizHistory')) || [];
+            if(history.length === 0) return alert("데이터가 없습니다.");
+            const worksheet = XLSX.utils.json_to_sheet(history);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Results");
+            XLSX.writeFile(workbook, "퀴즈_응시내역_리포트.xlsx");
+        }
+
+        function clearData() {
+            if(confirm("모든 데이터를 삭제하시겠습니까?")) {
+                localStorage.removeItem('quizHistory');
+                loadData();
+            }
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
